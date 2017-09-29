@@ -8,37 +8,26 @@ package net.proinf.gramatica;
 
 /**
  * Una palabra gramatical.
- *
+ * <p>
  * <p><a href="http://es.wikipedia.org/wiki/Formaci%C3%B3n_del_plural_en_espa%C3%B1ol">Formación del plural en español</a>
- *  - La Wikipedia </p>
- *
- * <p>Licencia: <a href="http://creativecommons.org/licenses/GPL/2.0/deed.es">Este software está sujeto a la CC-GNU GPL</a></p>
- * @author Francisco Cascales <fco@proinf.net>
- * @version 0.05, 24-dic-2007 - Inicio del proyecto
- * @version 0.07,  2-ene-2007 - Recordar las mayúsuculas de la palabra original
- * @version 0.08,  3-ene-2007 - Plural mejorado
+ * - La Wikipedia </p>
+ * <p>
  */
 public class Palabra extends Letras<Palabra> {
 
-    //////////////////////////////////////////////////
-    // Constantes
-
-    protected final static boolean NO = false;
     public final static int TODOS = Integer.MAX_VALUE;
     public final static int FALTAN_TODOS = Integer.MIN_VALUE;
+    protected final static boolean NO = false;
 
-    //////////////////////////////////////////////////
-    // Campos
-
-    private String original;
+    private final String original;
     private Genero genero;
     private Numero numero;
     private Silabas silabas;
 
-    //////////////////////////////////////////////////
-    // Constructores
+    public Palabra() {
+        this("");
+    }
 
-    public Palabra() { this(""); }
     public Palabra(String palabra) {
         super(palabra.toLowerCase());
         original = palabra;
@@ -47,24 +36,28 @@ public class Palabra extends Letras<Palabra> {
         silabas = null;
     }
 
-    //////////////////////////////////////////////////
-    // Utilidades
-
-    @Override public String toString() {
-        if (bafer.equals(original)) return original;
+    @Override
+    public String toString() {
+        if (bafer.toString().equals(original)) return original;
         else return enMayusculasSegunPatron(original);
     }
-    @Override public boolean equals(Object object) {
-        if (object == null) return false;
-        else return object.toString().equals(this.toString());
+
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
+    public boolean equals(Object object) {
+        return object != null && object.toString().equals(this.toString());
     }
 
-    /** Crea un duplicado de la palabra */
+    /**
+     * Crea un duplicado de la palabra
+     */
     public Palabra clonar() {
         return clonar(original);
     }
 
-    /** Crea un duplicado de la palabra pero cambiando el texto */
+    /**
+     * Crea un duplicado de la palabra pero cambiando el texto
+     */
     protected Palabra clonar(String texto) {
         Palabra palabra = new Palabra(texto);
         palabra.genero = this.genero();
@@ -72,7 +65,9 @@ public class Palabra extends Letras<Palabra> {
         return palabra;
     }
 
-    /** Convierte esta palabra a plural */
+    /**
+     * Convierte esta palabra a plural
+     */
     protected Palabra procesarPlural() {
         this.numero = Numero.plural;
         if (estaVacia() || NO == hayVocales()) return this;
@@ -80,96 +75,85 @@ public class Palabra extends Letras<Palabra> {
         if (ultimaLetra().esConsonante()) {
             if (ultimaLetra().es('z')) { // pez, hez, voz, maíz, nuez, jazz, raíz, matiz, idiotez
                 return quitarUltimaLetra().agregar("ces"); // vez/veces, raíz/raíces
-            }
-            else if (ultimaVocal().estaAcentuada()) {
+            } else if (ultimaVocal().estaAcentuada()) {
                 ultimaVocal().quitarAcento();
                 return agregar("es"); // camión/camiones, compás/compases, autobús/autobuses
-            }
-            else if (ultimaLetra().es('n')) { // certamen, clon, claxon, espécimen
+            } else if (ultimaLetra().es('n')) { // certamen, clon, claxon, espécimen
                 if (es("espécimen")) return cambiarPor("especímenes");
                 if (silabas().acentuacion().esLlana()) silabas().penultimaSilaba().acentuar();
                 return agregar("es"); // canon/cánones, examen/exámenes, imagen/imágenes, margen/márgenes
-            }
-            else if (ultimaLetra().es('s')) { // mes, dios, lapsus, análi   sis, gas
+            } else if (ultimaLetra().es('s')) { // mes, dios, lapsus, análi   sis, gas
                 if (silabas().numeroSilabas() == 1) return agregar("es"); // gas/gases, mes/meses, dios/dioses
                 else return this; // génesis, paréntesis, mecenas
-            }
-            else if (ultimaLetra().es('x')) { // clímax, fax, relax, látex, tórax, réflex, dúplex, telefax
+            } else if (ultimaLetra().es('x')) { // clímax, fax, relax, látex, tórax, réflex, dúplex, telefax
                 if (es("fax")) return agregar("es");
-            }
-            else if (ultimaLetra().es('c')) { // bistec, coñac, pársec, bloc
+            } else if (ultimaLetra().es('c')) { // bistec, coñac, pársec, bloc
                 //return quitarUltimaLetra().agregar("ques"); // frac/fraques, bistec/bisteques
                 return agregar("s");
-            }
-            else if (ultimaLetra().es('g')) { // zigzag, airbag, iceberg
+            } else if (ultimaLetra().es('g')) { // zigzag, airbag, iceberg
                 //return agregar("ues"); // zigzag/zigzagues, airbag/airbagues, iceberg/icebergues
                 return agregar("s");
-            }
-            else {
+            } else {
                 return agregar("es"); // tótem/tótemes, leal/leales, verdad/verdades, rey/reyes, reloj/relojes, red/redes
             }
-        }
-        else if (ultimaLetra().esVocal()) {
+        } else if (ultimaLetra().esVocal()) {
 
-            if (ultimaLetra().es('í','ú')) {
+            if (ultimaLetra().es('í', 'ú')) {
                 return agregar("es"); // tabú/tabúes, baladí/baladíes
-            }
-            else if(silabas().numeroSilabas() == 1 && NO == ultimaLetra().es('e')) {
+            } else if (silabas().numeroSilabas() == 1 && NO == ultimaLetra().es('e')) {
                 return agregar("es"); // a/aes, yo/yoes, no/noes, sí/síes, sol/soles
-            }
-            else if (NO == ultimaLetra().estaAcentuada() || ultimaLetra().es('á','é','ó')) {
+            } else if (NO == ultimaLetra().estaAcentuada() || ultimaLetra().es('á', 'é', 'ó')) {
                 return agregar("s"); // casa/casas, fe/fes, papá/papás, plató/platós
             }
         }
         return this;
     }
 
-    //////////////////////////////////////////////////
-    // Propiedades de escritura
-
-    /*public void cambiarAcentuacion(Acentuacion acentuacion) {
-        silabas().cambiarAcentuacion(acentuacion);
-    }*/
     public void cambiarGenero(Genero genero) {
         if (genero != null) this.genero = genero;
     }
+
     public void cambiarNumero(Numero numero) {
         if (numero != null) this.numero = numero;
     }
 
-    //////////////////////////////////////////////////
-    // Propiedades de lectura
-
-    /** Retorna el número de la palabra: <q>singular</q> o <q>plural</q>. */
-    public Numero numero () {
+    /**
+     * Retorna el número de la palabra: <q>singular</q> o <q>plural</q>.
+     */
+    public Numero numero() {
         if (numero == null) numero = Numero.segunPalabra(this);
         return numero;
     }
 
-    /** Ejemplo: "árbol" &rarr; <q>masculino</q> */
+    /**
+     * Ejemplo: "árbol" &rarr; <q>masculino</q>
+     */
     public Genero genero() {
         if (genero == null) genero = Genero.segunPalabra(this);
         return genero;
     }
 
-    /** Ejemplo: "áquila" &rarr; <q>femenino</q> */
+    /**
+     * Ejemplo: "áquila" &rarr; <q>femenino</q>
+     */
     public Genero generoAntepuesto() {
         return Genero.antepuestoSegunPalabra(this);
     }
 
-    /** Ejemplo: "cádiz" &rarr; <q>cá-diz</q> */
+    /**
+     * Ejemplo: "cádiz" &rarr; <q>cá-diz</q>
+     */
     public Silabas silabas() {
         if (silabas == null) silabas = new Silabas(this);
         return silabas;
     }
 
-    /** Ejemplo: "árbol" &rarr; <q>masculino</q> */
+    /**
+     * Ejemplo: "árbol" &rarr; <q>masculino</q>
+     */
     public Acentuacion acentuacion() {
         return silabas().acentuacion();
     }
-
-    //////////////////////////////////////////////////
-    // Interfaz
 
     /**
      * <dl>
@@ -191,11 +175,13 @@ public class Palabra extends Letras<Palabra> {
     }
 
     /** */
-    public Palabra enMayusculas () {
+    public Palabra enMayusculas() {
         return clonar(bafer.toString().toUpperCase());
     }
 
-    /** Ej: "pepe" &rarr; "Pepe" */
+    /**
+     * Ej: "pepe" &rarr; "Pepe"
+     */
     public Palabra enCapital() {
         String texto = bafer.toString();
         if (texto.length() <= 1) texto = texto.toUpperCase();
@@ -203,10 +189,12 @@ public class Palabra extends Letras<Palabra> {
         return clonar(texto);
     }
 
-    /** Ej: "café" &rarr; "cafe" */
+    /**
+     * Ej: "café" &rarr; "cafe"
+     */
     public Palabra sinAcentos() {
         Palabra palabra = clonar();
-        for (Letra letra: palabra) letra.quitarAcento();
+        for (Letra letra : palabra) letra.quitarAcento();
         return palabra;
     }
 
@@ -226,59 +214,57 @@ public class Palabra extends Letras<Palabra> {
         if (numeroElementos == Integer.MAX_VALUE) {
             if (generoAntepuesto().esFemenino()) return "todas las " + this.enPlural();
             else return "todos los " + this.enPlural();
-        }
-        else if (numeroElementos == 1) {
+        } else if (numeroElementos == 1) {
             if (generoAntepuesto().esFemenino()) return "una " + this;
             else return "un " + this;
-        }
-        else if (numeroElementos > 1) {
+        } else if (numeroElementos > 1) {
             String cantidad = String.valueOf(numeroElementos);
             return cantidad + " " + this.enPlural();
-        }
-        else if (numeroElementos == 0) {
+        } else if (numeroElementos == 0) {
             if (generoAntepuesto().esFemenino()) return "ninguna " + this;
             else return "ningún " + this;
-        }
-        else if (numeroElementos == Integer.MIN_VALUE) {
+        } else if (numeroElementos == Integer.MIN_VALUE) {
             if (generoAntepuesto().esFemenino()) return "faltan todas las " + this.enPlural();
             else return "faltan todos los " + this.enPlural();
-        }
-        else if (numeroElementos == -1) {
+        } else if (numeroElementos == -1) {
             if (generoAntepuesto().esFemenino()) return "falta una " + this;
             else return "falta un " + this;
         }
-        else if (numeroElementos < 0) {
-            String cantidad = String.valueOf(-numeroElementos);
-            return "faltan " + cantidad + " " + this.enPlural();
-        }
-        return "";
+        String cantidad = String.valueOf(-numeroElementos);
+        return "faltan " + cantidad + " " + this.enPlural();
     }
 
-    /** Ej: "categoría"(determinado) &rarr; "la categoría" */
+    /**
+     * Ej: "categoría"(determinado) &rarr; "la categoría"
+     */
     public String anteponerArticulo(Articulo articulo) {
         return articulo.agregarPalabra(this);
     }
 
-    /** Ej: "cliente"(indeterminado) &rarr; "de un cliente" */
-    public String anteponerDe (Articulo articulo) {
+    /**
+     * Ej: "cliente"(indeterminado) &rarr; "de un cliente"
+     */
+    public String anteponerDe(Articulo articulo) {
         if (articulo.casoArticuloContracto(this)) return "del " + this;
-        else return "de "  + articulo.agregarPalabra(this);
+        else return "de " + articulo.agregarPalabra(this);
     }
 
-    /** Ej: "cliente"(determinado) &rarr; "al cliente" */
-    public String anteponerA (Articulo articulo) {
+    /**
+     * Ej: "cliente"(determinado) &rarr; "al cliente"
+     */
+    public String anteponerA(Articulo articulo) {
         if (articulo.casoArticuloContracto(this)) return "al " + this;
-        else return "a "  + articulo.agregarPalabra(this);
+        else return "a " + articulo.agregarPalabra(this);
     }
 
     /**
      * Ej: "hola"("aAaA") &rarr; "hOlA",
-     *     "palabra"("AaA") &rarr; "PaLABRA"
+     * "palabra"("AaA") &rarr; "PaLABRA"
      */
     public String enMayusculasSegunPatron(String patron) {
-        StringBuffer destino = new StringBuffer(bafer);
+        StringBuilder destino = new StringBuilder(bafer);
         boolean enMayusculas = false;
-        for (int indice = 0; indice<destino.length(); ++indice) {
+        for (int indice = 0; indice < destino.length(); ++indice) {
             if (indice < patron.length()) {
                 enMayusculas = Character.isUpperCase(patron.charAt(indice));
             }
@@ -288,8 +274,6 @@ public class Palabra extends Letras<Palabra> {
         }
         return destino.toString();
     }
-
-
 }
 
 
